@@ -102,6 +102,11 @@
       background:var(--accent);
       color:#fff;
     }
+    .btn-secondary{
+      border-color:#bbb;
+      background:#f4f4f4;
+      color:#222;
+    }
     .coords{
       font-size:13px;
       color:#444;
@@ -146,6 +151,84 @@
       z-index:9999;
     }
     .toast.show{ display:block; }
+
+    /* Modal for nest list */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.65);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
+    }
+    .modal-overlay.show{
+      display:flex;
+    }
+    .modal{
+      background:#fff;
+      color:#222;
+      border-radius:12px;
+      max-width:95%;
+      width:100%;
+      max-height:85vh;
+      box-shadow:0 4px 14px rgba(0,0,0,0.3);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .modal-header{
+      padding:10px 12px;
+      border-bottom:1px solid #ddd;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+    }
+    .modal-header h2{
+      font-size:16px;
+      margin:0;
+    }
+    .modal-body{
+      padding:8px;
+      overflow:auto;
+      background:#fafafa;
+    }
+    .modal-close-btn{
+      border:none;
+      background:#eee;
+      border-radius:999px;
+      padding:4px 10px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .nests-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+    }
+    .nests-table th,
+    .nests-table td{
+      padding:6px 4px;
+      border-bottom:1px solid #ddd;
+      vertical-align:middle;
+    }
+    .nests-table th{
+      text-align:left;
+      background:#f0f0f0;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    .thumb{
+      max-width:60px;
+      max-height:60px;
+      border-radius:4px;
+      display:block;
+    }
+    .thumb-cell{
+      text-align:center;
+    }
 
     @media (min-width:700px){
       body{
@@ -225,11 +308,27 @@
 </div>
 
 <div class="card">
-  <button id="saveBtn" class="btn btn-primary" style="width:100%;">Save nest</button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button id="saveBtn" class="btn btn-primary" style="flex:2 1 140px;">Save nest</button>
+    <button id="viewNestsBtn" class="btn btn-secondary" style="flex:1 1 120px;">View nests</button>
+  </div>
   <div id="status" class="status"></div>
 </div>
 
 <div id="toast" class="toast"></div>
+
+<!-- Nests list modal -->
+<div id="nestsModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="nestsModalTitle">
+    <div class="modal-header">
+      <h2 id="nestsModalTitle">Last 100 nests</h2>
+      <button type="button" id="nestsCloseBtn" class="modal-close-btn">Close</button>
+    </div>
+    <div class="modal-body">
+      <div id="nestsTableWrap" class="small-muted">Loading…</div>
+    </div>
+  </div>
+</div>
 
 <!-- Leaflet JS -->
 <script
@@ -271,6 +370,13 @@
 
     document.getElementById("locBtn").addEventListener("click", useMyLocation);
     document.getElementById("saveBtn").addEventListener("click", onSave);
+
+    // Nests modal events
+    document.getElementById("viewNestsBtn").addEventListener("click", openNestsModal);
+    document.getElementById("nestsCloseBtn").addEventListener("click", closeNestsModal);
+    document.getElementById("nestsModal").addEventListener("click", (e)=>{
+      if(e.target.id==="nestsModal") closeNestsModal();
+    });
   });
 
   function useMyLocation(){
@@ -405,20 +511,162 @@
       }
       setStatus("Nest saved.","success");
       showToast("Nest saved.");
-      // Optionally reset form
-      // document.getElementById("nestName").value="";
-      // document.getElementById("nestId").value="";
-      // document.getElementById("territory").value="";
-      // document.getElementById("img1").value="";
-      // document.getElementById("img2").value="";
     }catch(err){
       console.error(err);
       setStatus("Network error while saving nest.","error");
       showToast("Network error.");
     }
   }
+
+  // ---- Nests popup ----
+
+  const nestsModal = document.getElementById("nestsModal");
+  const nestsTableWrap = document.getElementById("nestsTableWrap");
+
+  function openNestsModal(){
+    nestsModal.classList.add("show");
+    nestsModal.setAttribute("aria-hidden","false");
+    loadNestsTable();
+  }
+
+  function closeNestsModal(){
+    nestsModal.classList.remove("show");
+    nestsModal.setAttribute("aria-hidden","true");
+  }
+
+  function actionLabelFromField(field){
+    if(field && typeof field === "object" && field.value){
+      return field.value;
+    }
+    return "";
+  }
+
+  function safeCoord(v){
+    if(v == null || v === "") return "";
+    const n = Number(v);
+    if(Number.isNaN(n)) return "";
+    return n.toFixed(6);
+  }
+
+  async function loadNestsTable(){
+    nestsTableWrap.textContent = "Loading…";
+
+    try{
+      const res = await fetch("/api/nest-list");
+      if(!res.ok){
+        nestsTableWrap.textContent = "Failed to load nests.";
+        return;
+      }
+      const data = await res.json();
+      const rows = data.results || [];
+      if(!rows.length){
+        nestsTableWrap.textContent = "No nests logged yet.";
+        return;
+      }
+
+      const table = document.createElement("table");
+      table.className = "nests-table";
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Nest</th>
+            <th>Action</th>
+            <th>Territory</th>
+            <th>Lat</th>
+            <th>Lon</th>
+            <th>Img1</th>
+            <th>Img2</th>
+          </tr>
+        </thead>
+      `;
+
+      const tbody = document.createElement("tbody");
+
+      rows.forEach(row=>{
+        const tr = document.createElement("tr");
+
+        const dateCell = document.createElement("td");
+        const dt = row.field_6319312
+          ? row.field_6319312.replace("T"," ").slice(0,16)
+          : "";
+        dateCell.textContent = dt;
+        tr.appendChild(dateCell);
+
+        const nestCell = document.createElement("td");
+        const name = row.field_6319309 || "";
+        const id = row.field_6319310 || "";
+        nestCell.innerHTML = `
+          <div>${name}</div>
+          <div class="small-muted">${id ? "(" + id + ")" : ""}</div>
+        `;
+        tr.appendChild(nestCell);
+
+        const actionCell = document.createElement("td");
+        actionCell.textContent = actionLabelFromField(row.field_6319311);
+        tr.appendChild(actionCell);
+
+        const terrCell = document.createElement("td");
+        terrCell.textContent = row.field_6319315 || "";
+        tr.appendChild(terrCell);
+
+        const latCell = document.createElement("td");
+        latCell.textContent = safeCoord(row.field_6319313);
+        tr.appendChild(latCell);
+
+        const lonCell = document.createElement("td");
+        lonCell.textContent = safeCoord(row.field_6319314);
+        tr.appendChild(lonCell);
+
+        const img1Cell = document.createElement("td");
+        img1Cell.className = "thumb-cell";
+        const img1Arr = row.field_6319471 || [];
+        if (Array.isArray(img1Arr) && img1Arr.length > 0 && img1Arr[0].url){
+          const a = document.createElement("a");
+          a.href = img1Arr[0].url;
+          a.target = "_blank";
+          const img = document.createElement("img");
+          img.src = img1Arr[0].url;
+          img.alt = "img1";
+          img.className = "thumb";
+          a.appendChild(img);
+          img1Cell.appendChild(a);
+        } else {
+          img1Cell.textContent = "";
+        }
+        tr.appendChild(img1Cell);
+
+        const img2Cell = document.createElement("td");
+        img2Cell.className = "thumb-cell";
+        const img2Arr = row.field_6319472 || [];
+        if (Array.isArray(img2Arr) && img2Arr.length > 0 && img2Arr[0].url){
+          const a = document.createElement("a");
+          a.href = img2Arr[0].url;
+          a.target = "_blank";
+          const img = document.createElement("img");
+          img.src = img2Arr[0].url;
+          img.alt = "img2";
+          img.className = "thumb";
+          a.appendChild(img);
+          img2Cell.appendChild(a);
+        } else {
+          img2Cell.textContent = "";
+        }
+        tr.appendChild(img2Cell);
+
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      nestsTableWrap.innerHTML = "";
+      nestsTableWrap.appendChild(table);
+
+    }catch(err){
+      console.error("Error loading nests:", err);
+      nestsTableWrap.textContent = "Failed to load nests.";
+    }
+  }
 </script>
 
 </body>
 </html>
-
