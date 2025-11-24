@@ -1,5 +1,4 @@
 // /api/nest-submit.js
-// /api/nest-submit.js
 
 const BASEROW_TABLE_ID = 749257;
 const BASEROW_API_BASE = "https://api.baserow.io/api";
