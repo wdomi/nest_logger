@@ -667,6 +667,37 @@
     }
   }
 </script>
+<!-- Manual coordinate popup -->
+<div id="coordModal" class="modal-overlay" style="
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.65);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  z-index:3000;">
+  <div style="
+    background:#fff; padding:16px;
+    border-radius:12px; width:90%; max-width:300px;">
+    
+    <h3 style="margin-top:0;font-size:16px;">Enter coordinates</h3>
+    <div style="font-size:13px;margin-bottom:8px;">
+      Could not retrieve GPS automatically.
+    </div>
+
+    <input id="manualLat" type="number" step="0.000001"
+           placeholder="Latitude"
+           style="width:100%;padding:6px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
+
+    <input id="manualLon" type="number" step="0.000001"
+           placeholder="Longitude"
+           style="width:100%;padding:6px;margin-bottom:12px;border-radius:8px;border:1px solid #ccc;">
+
+    <div style="display:flex;gap:8px;">
+      <button id="coordCancel" class="btn btn-secondary" style="flex:1;">Cancel</button>
+      <button id="coordOk" class="btn btn-primary" style="flex:1;">OK</button>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
