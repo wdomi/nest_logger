@@ -1,4 +1,5 @@
 // /api/nest-submit.js
+// /api/nest-submit.js
 
 const BASEROW_TABLE_ID = 749257;
 const BASEROW_API_BASE = "https://api.baserow.io/api";
@@ -6,7 +7,32 @@ const BASEROW_API_BASE = "https://api.baserow.io/api";
 const STATUS_IDS = {
   maintained: 4554142,
   old: 4554143,
-  maybe: 4554144
+  broken: 4554144,
+  maybe: 4554144   // alias if frontend uses "maybe"
+};
+
+const LADDER_IDS = {
+  y: 4571231,
+  n: 4571232,
+  maybe: 4571233
+};
+
+const SIDE_IDS = {
+  right: 4571236,
+  left: 4571237,
+  middle: 4571238,
+  roof: 4571239
+};
+
+const ASPECT_IDS = {
+  N: 4571244,
+  NE: 4571245,
+  E: 4571246,
+  SE: 4571247,
+  S: 4571248,
+  SW: 4571249,
+  W: 4571250,
+  NW: 4571251
 };
 
 export default async function handler(req, res) {
@@ -19,22 +45,21 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Missing BASEROW_TOKEN" });
   }
 
-const {
-  nest_name,
-  nest_id,
-  status,
-  latitude,
-  longitude,
-  territory,
-  river,
-  remark,
-  ladder,
-  height_m,
-  side_going_downriver,
-  aspect,
-  images
-} = req.body || {};
-
+  const {
+    river,
+    nest_name,
+    nest_id,
+    status,
+    latitude,
+    longitude,
+    territory,
+    remark,
+    ladder,
+    height_m,
+    side_going_downriver,
+    aspect,
+    images
+  } = req.body || {};
 
   if (!nest_name || typeof nest_name !== "string") {
     return res.status(400).json({ error: "nest_name is required" });
@@ -43,7 +68,6 @@ const {
     return res.status(400).json({ error: "latitude and longitude must be numbers" });
   }
 
-  // Round to 10 decimal places to match Baserow field limits
   const latValue = Number(latitude.toFixed(10));
   const lonValue = Number(longitude.toFixed(10));
 
@@ -62,49 +86,35 @@ const {
 
     const resp = await fetch(`${BASEROW_API_BASE}/user-files/upload-file/`, {
       method: "POST",
-      headers: {
-        Authorization: "Token " + BASEROW_TOKEN
-      },
+      headers: { Authorization: "Token " + BASEROW_TOKEN },
       body: formData
     });
 
-    if (!resp.ok) {
-      const text = await resp.text().catch(() => "");
-      console.error("Baserow file upload error:", resp.status, text);
-      throw new Error("Failed to upload image");
-    }
-
     const data = await resp.json();
-    // Baserow expects the full object in the file field array
     return data;
   }
 
   try {
-    if (Array.isArray(images) && images.length > 0) {
-      if (images[0]) {
-        img1Obj = await uploadImageToBaserow(images[0]);
-      }
-      if (images[1]) {
-        img2Obj = await uploadImageToBaserow(images[1]);
-      }
+    if (Array.isArray(images)) {
+      if (images[0]) img1Obj = await uploadImageToBaserow(images[0]);
+      if (images[1]) img2Obj = await uploadImageToBaserow(images[1]);
     }
 
     const payload = {
       field_6319309: nest_name,
       field_6319310: nest_id || "",
       field_6319311: STATUS_IDS[status] || null,
-      // field_6319312 is "created on" (read-only) -> do NOT send
       field_6319313: latValue,
       field_6319314: lonValue,
       field_6319315: territory || "",
-  field_6319316: river || "",
-  field_6319317: remark || "",
-  field_6319318: ladder || "",
-  field_6319319: height_m || null,
-  field_6319320: side_going_downriver || "",
-  field_6319321: aspect || "",
-  field_6319471: img1Obj ? [img1Obj] : [],
-  field_6319472: img2Obj ? [img2Obj] : []
+      field_6320040: river || "",
+      field_6335875: remark || "",
+      field_6335877: LADDER_IDS[ladder] || null,
+      field_6335879: height_m || null,
+      field_6335880: SIDE_IDS[side_going_downriver] || null,
+      field_6335896: ASPECT_IDS[aspect] || null,
+      field_6319471: img1Obj ? [img1Obj] : [],
+      field_6319472: img2Obj ? [img2Obj] : []
     };
 
     const r = await fetch(
@@ -119,14 +129,9 @@ const {
       }
     );
 
-    if (!r.ok) {
-      const text = await r.text().catch(() => "");
-      console.error("Baserow row create error:", r.status, text);
-      return res.status(r.status).json({ error: text || "Baserow error" });
-    }
-
     const data = await r.json();
     return res.status(200).json({ success: true, id: data.id });
+
   } catch (err) {
     console.error("Nest submit error:", err);
     return res.status(500).json({ error: "Server error" });
