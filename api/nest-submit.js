@@ -6,8 +6,7 @@ const BASEROW_API_BASE = "https://api.baserow.io/api";
 const STATUS_IDS = {
   maintained: 4554142,
   old: 4554143,
-  broken: 4554144,
-  maybe: 4554144   // alias if frontend uses "maybe"
+  broken: 4554144
 };
 
 const LADDER_IDS = {
