@@ -1,123 +1,672 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8">
   <title>Nest Logger</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
 
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 20px;
-      text-align: center;
+    :root{
+      --accent:#2a4d69;
+      --bg:#f8f8f8;
+      --card:#ffffff;
+      --muted:#666;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      padding:12px;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:var(--bg);
+      color:#222;
+    }
+    header{
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+      margin-bottom:8px;
+    }
+    h1{
+      font-size:22px;
+      margin:0;
+    }
+    .subtitle{
+      font-size:13px;
+      color:var(--muted);
+    }
+    .card{
+      background:var(--card);
+      border-radius:12px;
+      padding:10px;
+      box-shadow:0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom:10px;
+    }
+    label{
+      font-size:14px;
+      font-weight:500;
+      display:block;
+      margin-bottom:4px;
+    }
+    input[type="text"],
+    select,
+    textarea{
+      width:100%;
+      padding:7px 9px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:14px;
+    }
+    textarea{
+      resize:vertical;
+      min-height:60px;
+    }
+    .field{
+      margin-bottom:8px;
+    }
+    .map-wrapper{
+      height:260px;
+      border-radius:10px;
+      overflow:hidden;
+      margin-bottom:6px;
+    }
+    #map{
+      width:100%;
+      height:100%;
+    }
+    .map-actions{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:6px;
+      margin-bottom:4px;
+      flex-wrap:wrap;
+    }
+    .btn{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid #bbb;
+      background:#eee;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .btn-primary{
+      border-color:var(--accent);
+      background:var(--accent);
+      color:#fff;
+    }
+    .btn-secondary{
+      border-color:#bbb;
+      background:#f4f4f4;
+      color:#222;
+    }
+    .coords{
+      font-size:13px;
+      color:#444;
+    }
+    .small-muted{
+      font-size:12px;
+      color:var(--muted);
+    }
+    .actions-row{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .actions-row label{
+      font-weight:400;
+    }
+    .file-row{
+      display:flex;
+      gap:6px;
+      flex-wrap:wrap;
+    }
+    .file-input{
+      flex:1;
+    }
+    .status{
+      font-size:13px;
+      margin-top:4px;
+    }
+    .status.error{ color:#c22; }
+    .status.success{ color:#2a7b3f; }
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:16px;
+      transform:translateX(-50%);
+      background:rgba(0,0,0,0.85);
+      color:#fff;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:13px;
+      display:none;
+      z-index:9999;
+    }
+    .toast.show{ display:block; }
+
+    /* Modal for nest list */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.65);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
+    }
+    .modal-overlay.show{
+      display:flex;
+    }
+    .modal{
+      background:#fff;
+      color:#222;
+      border-radius:12px;
+      max-width:95%;
+      width:100%;
+      max-height:85vh;
+      box-shadow:0 4px 14px rgba(0,0,0,0.3);
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+    }
+    .modal-header{
+      padding:10px 12px;
+      border-bottom:1px solid #ddd;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:8px;
+    }
+    .modal-header h2{
+      font-size:16px;
+      margin:0;
+    }
+    .modal-body{
+      padding:8px;
+      overflow:auto;
+      background:#fafafa;
+    }
+    .modal-close-btn{
+      border:none;
+      background:#eee;
+      border-radius:999px;
+      padding:4px 10px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .nests-table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:12px;
+    }
+    .nests-table th,
+    .nests-table td{
+      padding:6px 4px;
+      border-bottom:1px solid #ddd;
+      vertical-align:middle;
+    }
+    .nests-table th{
+      text-align:left;
+      background:#f0f0f0;
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+    .thumb{
+      max-width:60px;
+      max-height:60px;
+      border-radius:4px;
+      display:block;
+    }
+    .thumb-cell{
+      text-align:center;
     }
 
-    #manual-location-modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
-    }
-
-    #manual-location-modal .modal-content {
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      width: 300px;
-      text-align: left;
-    }
-
-    input {
-      width: 100%;
-      margin-bottom: 10px;
-      padding: 8px;
-      font-size: 16px;
-    }
-
-    button {
-      padding: 10px;
-      font-size: 16px;
-      cursor: pointer;
-      margin-top: 10px;
+    @media (min-width:700px){
+      body{
+        max-width:480px;
+        margin:0 auto;
+      }
     }
   </style>
 </head>
-
 <body>
+
+<header>
   <h1>Nest Logger</h1>
+  <div class="subtitle">Log dipper nests with GPS, status and photos.</div>
+</header>
 
-  <button id="use-location-btn">Use my location</button>
+<div class="card">
+  <div class="field">
+    <label for="nestName">Nest name *</label>
+    <input id="nestName" type="text" placeholder="e.g. Muur West" required>
+  </div>
 
-  <p id="status"></p>
+  <div class="field">
+    <label for="nestId">Nest ID (optional)</label>
+    <input id="nestId" type="text" placeholder="e.g. N-001">
+  </div>
 
-  <!-- ✅ Manual GPS popup -->
-  <div id="manual-location-modal">
-    <div class="modal-content">
-      <h3>Location unavailable</h3>
-      <p>Please enter GPS coordinates manually:</p>
-
-      <input id="lat-input" placeholder="Latitude">
-      <input id="lon-input" placeholder="Longitude">
-
-      <button id="submit-location">Use coordinates</button>
+  <div class="field">
+    <label>Action *</label>
+    <div class="actions-row">
+      <label><input type="radio" name="action" value="maintained" checked> Maintained</label>
+      <label><input type="radio" name="action" value="old"> Old</label>
+      <label><input type="radio" name="action" value="maybe"> Maybe</label>
     </div>
   </div>
 
-  <script>
-    document.getElementById("use-location-btn").onclick = () => {
-      document.getElementById("status").textContent = "Retrieving location...";
+  <div class="field">
+    <label for="territory">Territory (optional)</label>
+    <input id="territory" type="text" placeholder="e.g. Muur, Cluozza, ...">
+  </div>
+</div>
 
-      if (!navigator.geolocation) {
-        return showManualLocationPopup();
+<div class="card">
+  <div class="map-actions">
+    <span style="font-weight:500;font-size:14px;">Location</span>
+    <button id="locBtn" class="btn">Use my location</button>
+  </div>
+  <div class="map-wrapper">
+    <div id="map"></div>
+  </div>
+  <div class="coords">
+    Lat: <span id="latDisplay">–</span>,
+    Lon: <span id="lonDisplay">–</span>
+  </div>
+  <div class="small-muted">
+    Drag the marker or use "Use my location" to set the nest position.
+  </div>
+</div>
+
+<div class="card">
+  <div class="field">
+    <label>Photos (optional)</label>
+    <div class="file-row">
+      <div class="file-input">
+        <input id="img1" type="file" accept="image/*" capture="environment">
+        <div class="small-muted">Image 1</div>
+      </div>
+      <div class="file-input">
+        <input id="img2" type="file" accept="image/*" capture="environment">
+        <div class="small-muted">Image 2</div>
+      </div>
+    </div>
+    <div class="small-muted">
+      You can either choose photos or use your camera.
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;">
+    <button id="saveBtn" class="btn btn-primary" style="flex:2 1 140px;">Save nest</button>
+    <button id="viewNestsBtn" class="btn btn-secondary" style="flex:1 1 120px;">View nests</button>
+  </div>
+  <div id="status" class="status"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- Nests list modal -->
+<div id="nestsModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="nestsModalTitle">
+    <div class="modal-header">
+      <h2 id="nestsModalTitle">Last 100 nests</h2>
+      <button type="button" id="nestsCloseBtn" class="modal-close-btn">Close</button>
+    </div>
+    <div class="modal-body">
+      <div id="nestsTableWrap" class="small-muted">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+
+<script>
+  // Map setup
+  let map, marker;
+  const latDisplay = document.getElementById("latDisplay");
+  const lonDisplay = document.getElementById("lonDisplay");
+
+  function setCoords(lat, lon){
+    latDisplay.textContent = lat != null ? lat.toFixed(6) : "–";
+    lonDisplay.textContent = lon != null ? lon.toFixed(6) : "–";
+    marker.setLatLng([lat, lon]);
+    map.setView([lat, lon], 15);
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // Initialize map centered on Switzerland
+    map = L.map("map").setView([46.8, 8.3], 8);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors"
+    }).addTo(map);
+
+    marker = L.marker([46.8, 8.3], { draggable:true }).addTo(map);
+    marker.on("moveend", e => {
+      const latlng = e.target.getLatLng();
+      setCoords(latlng.lat, latlng.lng);
+    });
+
+    // Initialize display
+    setCoords(46.8, 8.3);
+
+    document.getElementById("locBtn").addEventListener("click", useMyLocation);
+    document.getElementById("saveBtn").addEventListener("click", onSave);
+
+    // Nests modal events
+    document.getElementById("viewNestsBtn").addEventListener("click", openNestsModal);
+    document.getElementById("nestsCloseBtn").addEventListener("click", closeNestsModal);
+    document.getElementById("nestsModal").addEventListener("click", (e)=>{
+      if(e.target.id==="nestsModal") closeNestsModal();
+    });
+  });
+
+  function useMyLocation(){
+    if(!navigator.geolocation){
+      showToast("Geolocation not supported.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        setCoords(lat, lon);
+      },
+      err => {
+        console.error(err);
+        showToast("Could not get location.");
+      },
+      { enableHighAccuracy:true, timeout:8000 }
+    );
+  }
+
+  function getSelectedAction(){
+    const radios = document.querySelectorAll('input[name="action"]');
+    for(const r of radios){
+      if(r.checked) return r.value;
+    }
+    return "maintained";
+  }
+
+  function showToast(msg, ms=2500){
+    const t=document.getElementById("toast");
+    t.textContent=msg;
+    t.classList.add("show");
+    setTimeout(()=>t.classList.remove("show"), ms);
+  }
+
+  function setStatus(msg, type=""){
+    const el=document.getElementById("status");
+    el.textContent=msg;
+    el.className="status";
+    if(type) el.classList.add(type);
+  }
+
+  function readFileAsBase64(file){
+    return new Promise((resolve,reject)=>{
+      const reader=new FileReader();
+      reader.onload=()=>resolve(reader.result);
+      reader.onerror=()=>reject(reader.error);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function onSave(){
+    setStatus("");
+    const nestName = document.getElementById("nestName").value.trim();
+    const nestId = document.getElementById("nestId").value.trim();
+    const territory = document.getElementById("territory").value.trim();
+    const action = getSelectedAction();
+
+    if(!nestName){
+      showToast("Nest name is required.");
+      setStatus("Nest name is required.","error");
+      return;
+    }
+
+    const latText = latDisplay.textContent;
+    const lonText = lonDisplay.textContent;
+    if(latText==="–" || lonText==="–"){
+      showToast("Please set a location on the map.");
+      setStatus("Please set a location on the map.","error");
+      return;
+    }
+
+    const latitude = Number(latText);
+    const longitude = Number(lonText);
+
+    const img1Input = document.getElementById("img1");
+    const img2Input = document.getElementById("img2");
+
+    const images = [];
+
+    try{
+      if(img1Input.files && img1Input.files[0]){
+        const f = img1Input.files[0];
+        const dataUrl = await readFileAsBase64(f);
+        const base64 = dataUrl.split(",")[1];
+        images.push({
+          filename: f.name,
+          mimeType: f.type || "image/jpeg",
+          dataBase64: base64
+        });
       }
+      if(img2Input.files && img2Input.files[0]){
+        const f = img2Input.files[0];
+        const dataUrl = await readFileAsBase64(f);
+        const base64 = dataUrl.split(",")[1];
+        images.push({
+          filename: f.name,
+          mimeType: f.type || "image/jpeg",
+          dataBase64: base64
+        });
+      }
+    }catch(err){
+      console.error("Error reading files", err);
+      setStatus("Failed to read image files.","error");
+      return;
+    }
 
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          handleCoords({
-            lat: pos.coords.latitude,
-            lon: pos.coords.longitude
-          });
-        },
-        () => {
-          showManualLocationPopup();
-        },
-        { timeout: 5000 }
-      );
+    const payload = {
+      nest_name: nestName,
+      nest_id: nestId || null,
+      action,
+      latitude,
+      longitude,
+      territory: territory || null,
+      images
     };
 
-    function showManualLocationPopup() {
-      document.getElementById("manual-location-modal").style.display = "flex";
+    setStatus("Saving…");
+    try{
+      const res = await fetch("/api/nest-submit",{
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify(payload)
+      });
+      const data = await res.json().catch(()=> ({}));
+      if(!res.ok){
+        console.error("Server error",res.status,data);
+        setStatus("Failed to save nest.","error");
+        showToast("Failed to save nest.");
+        return;
+      }
+      setStatus("Nest saved.","success");
+      showToast("Nest saved.");
+    }catch(err){
+      console.error(err);
+      setStatus("Network error while saving nest.","error");
+      showToast("Network error.");
+    }
+  }
 
-      document.getElementById("submit-location").onclick = () => {
-        const lat = parseFloat(document.getElementById("lat-input").value);
-        const lon = parseFloat(document.getElementById("lon-input").value);
+  // ---- Nests popup ----
 
-        if (isNaN(lat) || isNaN(lon)) {
-          alert("Please enter valid numbers.");
-          return;
+  const nestsModal = document.getElementById("nestsModal");
+  const nestsTableWrap = document.getElementById("nestsTableWrap");
+
+  function openNestsModal(){
+    nestsModal.classList.add("show");
+    nestsModal.setAttribute("aria-hidden","false");
+    loadNestsTable();
+  }
+
+  function closeNestsModal(){
+    nestsModal.classList.remove("show");
+    nestsModal.setAttribute("aria-hidden","true");
+  }
+
+  function actionLabelFromField(field){
+    if(field && typeof field === "object" && field.value){
+      return field.value;
+    }
+    return "";
+  }
+
+  function safeCoord(v){
+    if(v == null || v === "") return "";
+    const n = Number(v);
+    if(Number.isNaN(n)) return "";
+    return n.toFixed(6);
+  }
+
+  async function loadNestsTable(){
+    nestsTableWrap.textContent = "Loading…";
+
+    try{
+      const res = await fetch("/api/nest-list");
+      if(!res.ok){
+        nestsTableWrap.textContent = "Failed to load nests.";
+        return;
+      }
+      const data = await res.json();
+      const rows = data.results || [];
+      if(!rows.length){
+        nestsTableWrap.textContent = "No nests logged yet.";
+        return;
+      }
+
+      const table = document.createElement("table");
+      table.className = "nests-table";
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Nest</th>
+            <th>Action</th>
+            <th>Territory</th>
+            <th>Lat</th>
+            <th>Lon</th>
+            <th>Img1</th>
+            <th>Img2</th>
+          </tr>
+        </thead>
+      `;
+
+      const tbody = document.createElement("tbody");
+
+      rows.forEach(row=>{
+        const tr = document.createElement("tr");
+
+        const dateCell = document.createElement("td");
+        const dt = row.field_6319312
+          ? row.field_6319312.replace("T"," ").slice(0,16)
+          : "";
+        dateCell.textContent = dt;
+        tr.appendChild(dateCell);
+
+        const nestCell = document.createElement("td");
+        const name = row.field_6319309 || "";
+        const id = row.field_6319310 || "";
+        nestCell.innerHTML = `
+          <div>${name}</div>
+          <div class="small-muted">${id ? "(" + id + ")" : ""}</div>
+        `;
+        tr.appendChild(nestCell);
+
+        const actionCell = document.createElement("td");
+        actionCell.textContent = actionLabelFromField(row.field_6319311);
+        tr.appendChild(actionCell);
+
+        const terrCell = document.createElement("td");
+        terrCell.textContent = row.field_6319315 || "";
+        tr.appendChild(terrCell);
+
+        const latCell = document.createElement("td");
+        latCell.textContent = safeCoord(row.field_6319313);
+        tr.appendChild(latCell);
+
+        const lonCell = document.createElement("td");
+        lonCell.textContent = safeCoord(row.field_6319314);
+        tr.appendChild(lonCell);
+
+        const img1Cell = document.createElement("td");
+        img1Cell.className = "thumb-cell";
+        const img1Arr = row.field_6319471 || [];
+        if (Array.isArray(img1Arr) && img1Arr.length > 0 && img1Arr[0].url){
+          const a = document.createElement("a");
+          a.href = img1Arr[0].url;
+          a.target = "_blank";
+          const img = document.createElement("img");
+          img.src = img1Arr[0].url;
+          img.alt = "img1";
+          img.className = "thumb";
+          a.appendChild(img);
+          img1Cell.appendChild(a);
+        } else {
+          img1Cell.textContent = "";
         }
+        tr.appendChild(img1Cell);
 
-        document.getElementById("manual-location-modal").style.display = "none";
-        handleCoords({ lat, lon });
-      };
+        const img2Cell = document.createElement("td");
+        img2Cell.className = "thumb-cell";
+        const img2Arr = row.field_6319472 || [];
+        if (Array.isArray(img2Arr) && img2Arr.length > 0 && img2Arr[0].url){
+          const a = document.createElement("a");
+          a.href = img2Arr[0].url;
+          a.target = "_blank";
+          const img = document.createElement("img");
+          img.src = img2Arr[0].url;
+          img.alt = "img2";
+          img.className = "thumb";
+          a.appendChild(img);
+          img2Cell.appendChild(a);
+        } else {
+          img2Cell.textContent = "";
+        }
+        tr.appendChild(img2Cell);
+
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+      nestsTableWrap.innerHTML = "";
+      nestsTableWrap.appendChild(table);
+
+    }catch(err){
+      console.error("Error loading nests:", err);
+      nestsTableWrap.textContent = "Failed to load nests.";
     }
+  }
+</script>
 
-    function handleCoords(coords) {
-      document.getElementById("status").textContent =
-        `Using: ${coords.lat.toFixed(5)}, ${coords.lon.toFixed(5)}`;
-
-      sendToBaserow(coords);
-    }
-
-    function sendToBaserow(coords) {
-      console.log("Sending to Baserow:", coords);
-
-      // ✅ your real logic here
-      // fetch("/api/baserow", { method:"POST", body: JSON.stringify(coords) })
-    }
-  </script>
 </body>
 </html>
