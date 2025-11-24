@@ -3,7 +3,7 @@
 const BASEROW_TABLE_ID = 749257;
 const BASEROW_API_BASE = "https://api.baserow.io/api";
 
-const ACTION_IDS = {
+const STATUS_IDS = {
   maintained: 4554142,
   old: 4554143,
   maybe: 4554144
@@ -19,15 +19,22 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Missing BASEROW_TOKEN" });
   }
 
-  const {
-    nest_name,
-    nest_id,
-    action,
-    latitude,
-    longitude,
-    territory,
-    images
-  } = req.body || {};
+const {
+  nest_name,
+  nest_id,
+  status,
+  latitude,
+  longitude,
+  territory,
+  river,
+  remark,
+  ladder,
+  height_m,
+  side_going_downriver,
+  aspect,
+  images
+} = req.body || {};
+
 
   if (!nest_name || typeof nest_name !== "string") {
     return res.status(400).json({ error: "nest_name is required" });
@@ -85,13 +92,19 @@ export default async function handler(req, res) {
     const payload = {
       field_6319309: nest_name,
       field_6319310: nest_id || "",
-      field_6319311: ACTION_IDS[action] || null,
+      field_6319311: STATUS_IDS[status] || null,
       // field_6319312 is "created on" (read-only) -> do NOT send
       field_6319313: latValue,
       field_6319314: lonValue,
       field_6319315: territory || "",
-      field_6319471: img1Obj ? [img1Obj] : [],
-      field_6319472: img2Obj ? [img2Obj] : []
+  field_6319316: river || "",
+  field_6319317: remark || "",
+  field_6319318: ladder || "",
+  field_6319319: height_m || null,
+  field_6319320: side_going_downriver || "",
+  field_6319321: aspect || "",
+  field_6319471: img1Obj ? [img1Obj] : [],
+  field_6319472: img2Obj ? [img2Obj] : []
     };
 
     const r = await fetch(
