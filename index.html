@@ -247,6 +247,10 @@
 
 <div class="card">
   <div class="field">
+  <label for="river">River (optional)</label>
+  <input id="river" type="text" placeholder="e.g. Inn, Rhine, Albula">
+</div>
+  <div class="field">
     <label for="nestName">Nest name *</label>
     <input id="nestName" type="text" placeholder="e.g. Muur West" required>
   </div>
@@ -479,6 +483,7 @@
 
   async function onSave(){
     setStatus("");
+    const river = document.getElementById("river").value.trim();
     const nestName = document.getElementById("nestName").value.trim();
     const nestId = document.getElementById("nestId").value.trim();
     const territory = document.getElementById("territory").value.trim();
