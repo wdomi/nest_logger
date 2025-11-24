@@ -487,7 +487,7 @@
     const nestName = document.getElementById("nestName").value.trim();
     const nestId = document.getElementById("nestId").value.trim();
     const territory = document.getElementById("territory").value.trim();
-    const action = getSelectedStatus();
+    const status = getSelectedStatus();
 
     if(!nestName){
       showToast("Nest name is required.");
@@ -548,7 +548,7 @@ const payload = {
   river: river || null,   // ✅ ADD THIS LINE
   nest_name: nestName,
   nest_id: nestId || null,
-  action,
+  status,
   latitude,
   longitude,
   territory: territory || null,
@@ -637,7 +637,7 @@ const payload = {
           <tr>
             <th>Date</th>
             <th>Nest</th>
-            <th>Action</th>
+            <th>Status</th>
             <th>Territory</th>
             <th>Lat</th>
             <th>Lon</th>
