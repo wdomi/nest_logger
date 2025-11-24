@@ -545,6 +545,7 @@ const side = document.getElementById("side").value;
 const aspect = document.getElementById("aspect").value;
 
 const payload = {
+  river: river || null,   // ✅ ADD THIS LINE
   nest_name: nestName,
   nest_id: nestId || null,
   action,
