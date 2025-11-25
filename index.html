@@ -640,6 +640,7 @@ const payload = {
         <thead>
           <tr>
             <th>Date</th>
+            <th>River</th>
             <th>Nest</th>
             <th>Status</th>
             <th>Territory</th>
@@ -662,6 +663,12 @@ const payload = {
           : "";
         dateCell.textContent = dt;
         tr.appendChild(dateCell);
+
+                // ---- River field ----
+        const riverCell = document.createElement("td");
+        riverCell.textContent = row.field_6320040 || "";
+        tr.appendChild(riverCell);
+        
 
         const nestCell = document.createElement("td");
         const name = row.field_6319309 || "";
