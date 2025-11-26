@@ -435,9 +435,9 @@
   document.addEventListener("DOMContentLoaded", () => {
     // Initialize map centered on Switzerland
     map = L.map("map").setView([46.8, 8.3], 8);
-
- L.tileLayer(
-  "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg",
+    
+L.tileLayer(
+  "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg",
   {
     maxZoom: 19,
     minZoom: 5,
@@ -445,6 +445,7 @@
       '© <a href="https://www.swisstopo.admin.ch/">swisstopo</a>'
   }
 ).addTo(map);
+
 
 
     marker = L.marker([46.8, 8.3], { draggable:true }).addTo(map);
