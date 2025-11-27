@@ -127,8 +127,18 @@ export default async function handler(req, res) {
       }
     );
 
-    const data = await r.json();
-    return res.status(200).json({ success: true, id: data.id });
+const data = await r.json();
+
+if (!r.ok) {
+  console.error("Baserow error:", r.status, data);
+  return res.status(500).json({
+    error: "Baserow insert failed",
+    details: data
+  });
+}
+
+return res.status(200).json({ success: true, id: data.id });
+
 
   } catch (err) {
     console.error("Nest submit error:", err);
