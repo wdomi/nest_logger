@@ -3,9 +3,10 @@
 <head>
   <meta charset="utf-8">
   <title>Nest Logger</title>
+
   <link rel="icon" type="image/png" href="/favicon.png">
-<link rel="shortcut icon" href="/favicon.png">
-<link rel="apple-touch-icon" href="/favicon.png">
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
 
   <meta name="viewport" content="width=device-width,initial-scale=1">
 
@@ -13,8 +14,6 @@
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
-    crossorigin=""
   />
 
   <style>
@@ -34,26 +33,19 @@
     }
 
     header {
-        display: flex;          /* horizontal layout */
-        align-items: center;    /* vertically center icon + text */
-        gap: 8px;               /* space between icon and text */
-        margin-bottom: 8px;
-      }
-      
-      header img {
-        width: 35px;
-        height: 35px;
-        flex-shrink: 0;
-      }
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    header img{
+      width:45px;
+      height:45px;
+    }
 
-    h1{
-      font-size:22px;
-      margin:0;
-    }
-    .subtitle{
-      font-size:13px;
-      color:var(--muted);
-    }
+    h1 { font-size:22px; margin:0; }
+    .subtitle { font-size:13px; color:var(--muted); }
+
     .card{
       background:var(--card);
       border-radius:12px;
@@ -61,46 +53,28 @@
       box-shadow:0 1px 4px rgba(0,0,0,0.08);
       margin-bottom:10px;
     }
-    label{
-      font-size:14px;
-      font-weight:500;
-      display:block;
-      margin-bottom:4px;
-    }
-    input[type="text"],
-    select,
-    textarea{
+
+    label{ font-size:14px; font-weight:500; display:block; margin-bottom:4px; }
+
+    input[type="text"], select, textarea{
       width:100%;
       padding:7px 9px;
       border-radius:8px;
       border:1px solid #ccc;
       font-size:14px;
     }
-    textarea{
-      resize:vertical;
-      min-height:60px;
-    }
-    .field{
-      margin-bottom:8px;
-    }
+    textarea{ resize:vertical; min-height:60px; }
+
+    .field{ margin-bottom:8px; }
+
     .map-wrapper{
       height:260px;
       border-radius:10px;
       overflow:hidden;
       margin-bottom:6px;
     }
-    #map{
-      width:100%;
-      height:100%;
-    }
-    .map-actions{
-      display:flex;
-      justify-content:space-between;
-      align-items:center;
-      gap:6px;
-      margin-bottom:4px;
-      flex-wrap:wrap;
-    }
+    #map{ width:100%; height:100%; }
+
     .btn{
       padding:8px 12px;
       border-radius:999px;
@@ -114,41 +88,11 @@
       background:var(--accent);
       color:#fff;
     }
-    .btn-secondary{
-      border-color:#bbb;
-      background:#f4f4f4;
-      color:#222;
-    }
-    .coords{
-      font-size:13px;
-      color:#444;
-    }
-    .small-muted{
-      font-size:12px;
-      color:var(--muted);
-    }
-    .actions-row{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-    }
-    .actions-row label{
-      font-weight:400;
-    }
-    .file-row{
-      display:flex;
-      gap:6px;
-      flex-wrap:wrap;
-    }
-    .file-input{
-      flex:1;
-    }
-    .status{
-      font-size:13px;
-      margin-top:4px;
-    }
+
+    .status{ font-size:13px; margin-top:4px; }
     .status.error{ color:#c22; }
     .status.success{ color:#2a7b3f; }
+
     .toast{
       position:fixed;
       left:50%;
@@ -164,7 +108,7 @@
     }
     .toast.show{ display:block; }
 
-    /* Modal for nest list */
+    /* Modal */
     .modal-overlay{
       position:fixed;
       inset:0;
@@ -174,198 +118,134 @@
       justify-content:center;
       z-index:2000;
     }
-    .modal-overlay.show{
-      display:flex;
-    }
+    .modal-overlay.show{ display:flex; }
+
     .modal{
       background:#fff;
       color:#222;
       border-radius:12px;
-      max-width:95%;
       width:100%;
+      max-width:95%;
       max-height:85vh;
-      box-shadow:0 4px 14px rgba(0,0,0,0.3);
       display:flex;
       flex-direction:column;
       overflow:hidden;
+      box-shadow:0 4px 14px rgba(0,0,0,0.3);
     }
+
     .modal-header{
       padding:10px 12px;
-      border-bottom:1px solid #ddd;
       display:flex;
       justify-content:space-between;
+      border-bottom:1px solid #ddd;
       align-items:center;
-      gap:8px;
     }
-    .modal-header h2{
-      font-size:16px;
-      margin:0;
-    }
+
     .modal-body{
       padding:8px;
       overflow:auto;
       background:#fafafa;
     }
+
     .modal-close-btn{
-      border:none;
       background:#eee;
+      border:none;
       border-radius:999px;
       padding:4px 10px;
       cursor:pointer;
       font-size:13px;
     }
-    .nests-table{
-      width:100%;
-      border-collapse:collapse;
-      font-size:12px;
-    }
-    .nests-table th,
-    .nests-table td{
-      padding:6px 4px;
-      border-bottom:1px solid #ddd;
-      vertical-align:middle;
-    }
-    .nests-table th{
-      text-align:left;
-      background:#f0f0f0;
-      position:sticky;
-      top:0;
-      z-index:1;
-    }
-    .thumb{
-      max-width:60px;
-      max-height:60px;
-      border-radius:4px;
-      display:block;
-    }
-    .thumb-cell{
-      text-align:center;
-    }
 
     @media (min-width:700px){
-      body{
-        max-width:480px;
-        margin:0 auto;
-      }
+      body{ max-width:480px; margin:0 auto; }
     }
   </style>
 </head>
+
 <body>
-
 <header>
-<img src="/favicon.png" alt="" style="width:45px;height:45px;">
-
-  <div style="flex:1;">
+  <img src="/favicon.png" alt="">
+  <div style="flex:1">
     <h1>Nest Logger</h1>
     <div class="subtitle">Log dipper nests with GPS, status and photos.</div>
   </div>
 
-  <!-- ⭐ NEW BUTTON -->
   <a href="https://dipper-finder.vercel.app"
-     style="
-       padding:6px 12px;
-       border-radius:999px;
-       background:#2a4d69;
-       color:white;
-       text-decoration:none;
-       font-size:13px;
-       white-space:nowrap;
-     ">
+     style="padding:6px 12px;border-radius:999px;background:#2a4d69;color:#fff;text-decoration:none;font-size:13px;white-space:nowrap;">
      Dipper-Finder
   </a>
 </header>
 
-  <div id="offlineStatus" class="small-muted" style="display:none; margin-bottom:8px;"></div>
+<div id="offlineStatus" class="small-muted" style="display:none;margin-bottom:8px;"></div>
 
-
+<!-- FORM -->
 <div class="card">
   <div class="field">
-  <label for="river">River (optional)</label>
-  <input id="river" type="text" placeholder="e.g. Inn, Rhine, Albula">
-</div>
+    <label for="river">River (optional)</label>
+    <input id="river" type="text">
+  </div>
   <div class="field">
     <label for="nestName">Nest name *</label>
-    <input id="nestName" type="text" placeholder="e.g. Muur West" required>
+    <input id="nestName" type="text" required>
   </div>
-
   <div class="field">
     <label for="nestId">Nest ID (optional)</label>
-    <input id="nestId" type="text" placeholder="e.g. N-001">
+    <input id="nestId" type="text">
   </div>
-
   <div class="field">
     <label>Status *</label>
-    <div class="actions-row">
-      <label><input type="radio" name="status" value="maintained" checked> Maintained</label>
-      <label><input type="radio" name="status" value="old"> Old</label>
-      <label><input type="radio" name="status" value="broken"> Broken</label>
-    </div>
+    <label><input type="radio" name="status" value="maintained" checked> Maintained</label>
+    <label><input type="radio" name="status" value="old"> Old</label>
+    <label><input type="radio" name="status" value="broken"> Broken</label>
   </div>
-
   <div class="field">
-    <label for="territory">Territory (optional)</label>
-    <input id="territory" type="text" placeholder="e.g. Muur, Cluozza, ...">
+    <label for="territory">Territory</label>
+    <input id="territory" type="text">
   </div>
 </div>
 
+<!-- MAP -->
 <div class="card">
-  <div class="map-actions">
-    <span style="font-weight:500;font-size:14px;">Location</span>
-    <button id="locBtn" class="btn">Use my location</button>
-  </div>
+  <button id="locBtn" class="btn">Use my location</button>
+
   <div class="map-wrapper">
     <div id="map"></div>
   </div>
+
   <div class="coords">
     Lat: <span id="latDisplay">–</span>,
     Lon: <span id="lonDisplay">–</span>
   </div>
-  <div class="small-muted">
-    Drag the marker or use "Use my location" to set the nest position.
-  </div>
 </div>
 
+<!-- IMAGES -->
+<div class="card">
+  <label>Photos (optional)</label>
+  <input id="img1" type="file" accept="image/*"><br>
+  <input id="img2" type="file" accept="image/*">
+</div>
+
+<!-- EXTRA FIELDS -->
 <div class="card">
   <div class="field">
-    <label>Photos (optional)</label>
-    <div class="file-row">
-      <div class="file-input">
-<input id="img1" type="file" accept="image/*">
-        <div class="small-muted">Image 1</div>
-      </div>
-      <div class="file-input">
-<input id="img2" type="file" accept="image/*">
-        <div class="small-muted">Image 2</div>
-      </div>
-    </div>
-    <div class="small-muted">
-      You can either choose photos or use your camera.
-    </div>
-  </div>
-</div>
-
-  <div class="card">
-  <div class="field">
-    <label for="remark">Remark (optional)</label>
-    <textarea id="remark" placeholder="Notes, description, etc."></textarea>
+    <label for="remark">Remark</label>
+    <textarea id="remark"></textarea>
   </div>
 
   <div class="field">
     <label>Ladder</label>
-    <div class="actions-row">
-      <label><input type="radio" name="ladder" value="y"> Yes</label>
-      <label><input type="radio" name="ladder" value="n"> No</label>
-      <label><input type="radio" name="ladder" value="maybe" checked> Maybe</label>
-    </div>
+    <label><input type="radio" name="ladder" value="y"> Yes</label>
+    <label><input type="radio" name="ladder" value="n"> No</label>
+    <label><input type="radio" name="ladder" value="maybe" checked> Maybe</label>
   </div>
 
   <div class="field">
     <label for="height_m">Height (m)</label>
-    <input id="height_m" type="number" step="0.1" min="0" placeholder="e.g. 2.5">
+    <input id="height_m" type="number" step="0.1" min="0">
   </div>
 
   <div class="field">
-    <label for="side">Side going downriver</label>
+    <label>Side going downriver</label>
     <select id="side">
       <option value="">–</option>
       <option value="right">Right</option>
@@ -376,7 +256,7 @@
   </div>
 
   <div class="field">
-    <label for="aspect">Aspect</label>
+    <label>Aspect</label>
     <select id="aspect">
       <option value="">–</option>
       <option value="N">N</option>
@@ -391,524 +271,334 @@
   </div>
 </div>
 
-
+<!-- SAVE -->
 <div class="card">
-  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <button id="saveBtn" class="btn btn-primary" style="flex:2 1 140px;">Save nest</button>
-    <button id="viewNestsBtn" class="btn btn-secondary" style="flex:1 1 120px;">View nests</button>
-  </div>
+  <button id="saveBtn" class="btn btn-primary" style="width:100%">Save nest</button>
   <div id="status" class="status"></div>
 </div>
 
 <div id="toast" class="toast"></div>
 
-<!-- Nests list modal -->
+<!-- NEST LIST MODAL -->
 <div id="nestsModal" class="modal-overlay" aria-hidden="true">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="nestsModalTitle">
+  <div class="modal">
     <div class="modal-header">
-      <h2 id="nestsModalTitle">Last 100 nests</h2>
-      <button type="button" id="nestsCloseBtn" class="modal-close-btn">Close</button>
+      <h2>Last 100 nests</h2>
+      <button id="nestsCloseBtn" class="modal-close-btn">Close</button>
     </div>
     <div class="modal-body">
-      <div id="nestsTableWrap" class="small-muted">Loading…</div>
+      <div id="nestsTableWrap">Loading…</div>
     </div>
   </div>
 </div>
 
 <!-- Leaflet JS -->
-<script
-  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-  crossorigin=""
-></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
-  // Map setup
-  let map, marker;
-  const latDisplay = document.getElementById("latDisplay");
-  const lonDisplay = document.getElementById("lonDisplay");
-
-  function setCoords(lat, lon){
-    latDisplay.textContent = lat != null ? lat.toFixed(6) : "–";
-    lonDisplay.textContent = lon != null ? lon.toFixed(6) : "–";
-    marker.setLatLng([lat, lon]);
-    map.setView([lat, lon], 15);
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    // Initialize map centered on Switzerland
-    map = L.map("map").setView([46.8, 8.3], 8);
-    
-L.tileLayer(
-  "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg",
-  {
-    maxZoom: 19,
-    minZoom: 5,
-    attribution:
-      '© <a href="https://www.swisstopo.admin.ch/">swisstopo</a>'
-  }
-).addTo(map);
-
-
-
-    marker = L.marker([46.8, 8.3], { draggable:true }).addTo(map);
-    marker.on("moveend", e => {
-      const latlng = e.target.getLatLng();
-      setCoords(latlng.lat, latlng.lng);
-    });
-
-    // Initialize display
-    setCoords(46.8, 8.3);
-
-    document.getElementById("locBtn").addEventListener("click", useMyLocation);
-    document.getElementById("saveBtn").addEventListener("click", onSave);
-
-    // Nests modal events
-    document.getElementById("viewNestsBtn").addEventListener("click", openNestsModal);
-    document.getElementById("nestsCloseBtn").addEventListener("click", closeNestsModal);
-    document.getElementById("nestsModal").addEventListener("click", (e)=>{
-      if(e.target.id==="nestsModal") closeNestsModal();
-    });
-  });
-
-  function useMyLocation(){
-    if(!navigator.geolocation){
-      showToast("Geolocation not supported.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        setCoords(lat, lon);
-      },
-      err => {
-        console.error(err);
-        showToast("Could not get location.");
-      },
-      { enableHighAccuracy:true, timeout:8000 }
-    );
-  }
-
-  function getSelectedStatus(){
-    const radios = document.querySelectorAll('input[name="status"]');
-    for(const r of radios){
-      if(r.checked) return r.value;
-    }
-    return "maintained";
-  }
-
-
-  // ------------------------------------------------------------
-// OFFLINE QUEUE (localStorage)
 // ------------------------------------------------------------
-const OFFLINE_KEY = "nestlogger_offline_queue";
+// MAP INIT
+// ------------------------------------------------------------
+let map, marker;
+const latDisplay = document.getElementById("latDisplay");
+const lonDisplay = document.getElementById("lonDisplay");
 
-function getQueue() {
-  try {
-    return JSON.parse(localStorage.getItem(OFFLINE_KEY) || "[]");
-  } catch {
-    return [];
-  }
+function setCoords(lat, lon){
+  latDisplay.textContent = lat.toFixed(6);
+  lonDisplay.textContent = lon.toFixed(6);
+  marker.setLatLng([lat, lon]);
+  map.setView([lat, lon], 15);
 }
 
-function setQueue(arr) {
+document.addEventListener("DOMContentLoaded", () => {
+  map = L.map("map").setView([46.8, 8.3], 8);
+
+  L.tileLayer(
+    "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg",
+    { maxZoom: 19, minZoom: 5 }
+  ).addTo(map);
+
+  marker = L.marker([46.8, 8.3], { draggable:true }).addTo(map);
+  marker.on("moveend", e=>{
+    const p = e.target.getLatLng();
+    setCoords(p.lat, p.lng);
+  });
+
+  setCoords(46.8, 8.3);
+
+  document.getElementById("locBtn").onclick = useMyLocation;
+  document.getElementById("saveBtn").onclick = onSave;
+  document.getElementById("viewNestsBtn")?.addEventListener("click", openNestsModal);
+  document.getElementById("nestsCloseBtn").onclick = closeNestsModal;
+
+  updateOfflineStatus();
+  tryFlushQueue();
+});
+
+function useMyLocation(){
+  if(!navigator.geolocation){
+    showToast("Geolocation not supported.");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => setCoords(pos.coords.latitude, pos.coords.longitude),
+    () => showToast("Could not get location."),
+    { enableHighAccuracy:true }
+  );
+}
+
+// ------------------------------------------------------------
+// OFFLINE QUEUE
+// ------------------------------------------------------------
+const OFFLINE_KEY = "nestlogger_queue";
+
+function getQueue(){
+  try{ return JSON.parse(localStorage.getItem(OFFLINE_KEY)||"[]"); }
+  catch{ return []; }
+}
+
+function setQueue(arr){
   localStorage.setItem(OFFLINE_KEY, JSON.stringify(arr));
 }
 
-function updateOfflineStatus() {
-  const el = document.getElementById("offlineStatus");
+function updateOfflineStatus(){
   const q = getQueue();
-  if (!q.length) {
-    el.style.display = "none";
+  const el = document.getElementById("offlineStatus");
+
+  if(!q.length){
+    el.style.display="none";
     return;
   }
-  const msg =
-    q.length === 1
-      ? "1 Nest local gespeichert – wird gesendet sobald wieder Internet verfügbar ist."
-      : `${q.length} Nester local gespeichert – werden gesendet sobald wieder Internet verfügbar ist.`;
-  el.textContent = msg;
-  el.style.display = "block";
+  el.style.display="block";
+  el.textContent =
+    q.length===1
+      ? "1 Nest lokal gespeichert – wird gesendet sobald Internet verfügbar ist."
+      : `${q.length} Nester lokal gespeichert – werden gesendet sobald Internet verfügbar ist.`;
 }
 
-async function tryFlushQueue() {
-  if (!navigator.onLine) return;
+async function saveNestOnline(payload){
+  const r = await fetch("/api/nest-submit",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify(payload)
+  });
+  if(!r.ok) throw new Error("Server error");
+  return r.json();
+}
+
+async function tryFlushQueue(){
+  if(!navigator.onLine) return;
 
   const q = getQueue();
-  if (!q.length) return;
+  if(!q.length) return;
 
-  let sent = 0;
-  const remaining = [];
+  const remaining=[];
+  let sent=0;
 
-  for (const payload of q) {
-    try {
-      await saveNestOnline(payload);
+  for(const entry of q){
+    try{
+      await saveNestOnline(entry);
       sent++;
-    } catch {
-      remaining.push(payload);
+    }catch{
+      remaining.push(entry);
     }
   }
 
   setQueue(remaining);
   updateOfflineStatus();
 
-  if (sent > 0) {
-    showToast(
-      sent === 1
-        ? "1 gespeichertes Nest erfolgreich hochgeladen."
-        : `${sent} gespeicherte Nester erfolgreich hochgeladen.`
-    );
+  if(sent>0){
+    showToast(`${sent} gespeicherte Nester hochgeladen.`);
   }
 }
 
-// Run when app starts
-window.addEventListener("load", () => {
-  updateOfflineStatus();
-  tryFlushQueue();
-});
+// ------------------------------------------------------------
+// UI HELPERS
+// ------------------------------------------------------------
+function showToast(msg, ms=2500){
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), ms);
+}
 
-window.addEventListener("online", tryFlushQueue);
+function setStatus(msg, type=""){
+  const el=document.getElementById("status");
+  el.textContent=msg;
+  el.className="status " + type;
+}
 
-  
-  function showToast(msg, ms=2500){
-    const t=document.getElementById("toast");
-    t.textContent=msg;
-    t.classList.add("show");
-    setTimeout(()=>t.classList.remove("show"), ms);
-  }
-
-  function setStatus(msg, type=""){
-    const el=document.getElementById("status");
-    el.textContent=msg;
-    el.className="status";
-    if(type) el.classList.add(type);
-  }
-
-  function readFileAsBase64(file){
-    return new Promise((resolve,reject)=>{
-      const reader=new FileReader();
-      reader.onload=()=>resolve(reader.result);
-      reader.onerror=()=>reject(reader.error);
-      reader.readAsDataURL(file);
-    });
-  }
-
-
-  async function saveNestOnline(payload) {
-  const res = await fetch("/api/nest-submit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload)
+function readFileAsBase64(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(r.result);
+    r.onerror=reject;
+    r.readAsDataURL(file);
   });
-  if (!res.ok) {
-    throw new Error("Server error");
-  }
-  return res.json();
 }
 
-  
-  async function onSave(){
-    setStatus("");
-    const river = document.getElementById("river").value.trim();
-    const nestName = document.getElementById("nestName").value.trim();
-    const nestId = document.getElementById("nestId").value.trim();
-    const territory = document.getElementById("territory").value.trim();
-    const status = getSelectedStatus();
+// ------------------------------------------------------------
+// SAVE LOGIC
+// ------------------------------------------------------------
+function getSelectedStatus(){
+  return document.querySelector('input[name="status"]:checked').value;
+}
 
-    if(!nestName){
-      showToast("Nest name is required.");
-      setStatus("Nest name is required.","error");
+async function onSave(){
+  setStatus("");
+
+  const river = document.getElementById("river").value.trim();
+  const nest_name = document.getElementById("nestName").value.trim();
+  const nest_id = document.getElementById("nestId").value.trim();
+  const territory = document.getElementById("territory").value.trim();
+
+  if(!nest_name){
+    setStatus("Nest name is required","error");
+    showToast("Nest name required");
+    return;
+  }
+
+  const lat = Number(latDisplay.textContent);
+  const lon = Number(lonDisplay.textContent);
+
+  const images=[];
+
+  try{
+    const img1=document.getElementById("img1").files[0];
+    const img2=document.getElementById("img2").files[0];
+
+    if(img1){
+      const data=await readFileAsBase64(img1);
+      images.push({ filename:img1.name, mimeType:img1.type, dataBase64:data.split(",")[1] });
+    }
+
+    if(img2){
+      const data=await readFileAsBase64(img2);
+      images.push({ filename:img2.name, mimeType:img2.type, dataBase64:data.split(",")[1] });
+    }
+  }catch(e){
+    setStatus("Error reading images","error");
+    return;
+  }
+
+  const payload = {
+    river: river || null,
+    nest_name,
+    nest_id: nest_id || null,
+    status: getSelectedStatus(),
+    latitude: lat,
+    longitude: lon,
+    territory: territory || null,
+    remark: document.getElementById("remark").value.trim() || null,
+    ladder: document.querySelector('input[name="ladder"]:checked')?.value || null,
+    height_m: Number(document.getElementById("height_m").value) || null,
+    side_going_downriver: document.getElementById("side").value || null,
+    aspect: document.getElementById("aspect").value || null,
+    images
+  };
+
+  setStatus("Saving...");
+
+  // offline
+  if(!navigator.onLine){
+    const q=getQueue();
+    q.push(payload);
+    setQueue(q);
+    updateOfflineStatus();
+    setStatus("Nest offline gespeichert","success");
+    showToast("Nest offline gespeichert");
+    return;
+  }
+
+  // online
+  try{
+    await saveNestOnline(payload);
+    setStatus("Nest saved","success");
+    showToast("Nest saved");
+    tryFlushQueue();
+  }catch(err){
+    // fallback to offline
+    const q=getQueue();
+    q.push(payload);
+    setQueue(q);
+    updateOfflineStatus();
+    setStatus("Offline gespeichert","success");
+    showToast("Offline gespeichert");
+  }
+}
+
+// ------------------------------------------------------------
+// NEST LIST MODAL
+// ------------------------------------------------------------
+const nestsModal=document.getElementById("nestsModal");
+const nestsTableWrap=document.getElementById("nestsTableWrap");
+
+function openNestsModal(){
+  nestsModal.classList.add("show");
+  nestsModal.setAttribute("aria-hidden","false");
+  loadNestsTable();
+}
+
+function closeNestsModal(){
+  nestsModal.classList.remove("show");
+  nestsModal.setAttribute("aria-hidden","true");
+}
+
+function safeCoord(v){
+  if(!v) return "";
+  const n=Number(v);
+  return isNaN(n)?"":n.toFixed(6);
+}
+
+async function loadNestsTable(){
+  nestsTableWrap.textContent="Loading…";
+
+  try{
+    const res=await fetch("/api/nest-list");
+    if(!res.ok){
+      nestsTableWrap.textContent="Failed to load nests.";
       return;
     }
 
-    const latText = latDisplay.textContent;
-    const lonText = lonDisplay.textContent;
-    if(latText==="–" || lonText==="–"){
-      showToast("Please set a location on the map.");
-      setStatus("Please set a location on the map.","error");
+    const data=await res.json();
+    const rows=data.results || [];
+
+    if(!rows.length){
+      nestsTableWrap.textContent="No nests logged yet.";
       return;
     }
 
-    const latitude = Number(latText);
-    const longitude = Number(lonText);
+    const table=document.createElement("table");
+    table.style.width="100%";
 
-    const img1Input = document.getElementById("img1");
-    const img2Input = document.getElementById("img2");
+    const header=document.createElement("tr");
+    header.innerHTML="<th>Date</th><th>River</th><th>Name</th><th>Status</th><th>Lat</th><th>Lon</th>";
+    table.appendChild(header);
 
-    const images = [];
+    rows.forEach(r=>{
+      const tr=document.createElement("tr");
 
-    try{
-      if(img1Input.files && img1Input.files[0]){
-        const f = img1Input.files[0];
-        const dataUrl = await readFileAsBase64(f);
-        const base64 = dataUrl.split(",")[1];
-        images.push({
-          filename: f.name,
-          mimeType: f.type || "image/jpeg",
-          dataBase64: base64
-        });
-      }
-      if(img2Input.files && img2Input.files[0]){
-        const f = img2Input.files[0];
-        const dataUrl = await readFileAsBase64(f);
-        const base64 = dataUrl.split(",")[1];
-        images.push({
-          filename: f.name,
-          mimeType: f.type || "image/jpeg",
-          dataBase64: base64
-        });
-      }
-    }catch(err){
-      console.error("Error reading files", err);
-      setStatus("Failed to read image files.","error");
-      return;
-    }
+      const dt = r.field_6319312?.replace("T"," ").slice(0,16) || "";
 
-    const ladderRadio = document.querySelector('input[name="ladder"]:checked');
-const remark = document.getElementById("remark").value.trim();
-const height_m = document.getElementById("height_m").value.trim();
-const side = document.getElementById("side").value;
-const aspect = document.getElementById("aspect").value;
-
-const payload = {
-  river: river || null,   // ✅ ADD THIS LINE
-  nest_name: nestName,
-  nest_id: nestId || null,
-  status,
-  latitude,
-  longitude,
-  territory: territory || null,
-  remark: remark || null,
-  ladder: ladderRadio ? ladderRadio.value : null,
-  height_m: height_m ? Number(height_m) : null,
-  side_going_downriver: side || null,
-  aspect: aspect || null,
-  images
-};
-
-
-   setStatus("Saving…");
-
-//
-// If offline → store in local queue
-//
-if (!navigator.onLine) {
-  const q = getQueue();
-  q.push(payload);
-  setQueue(q);
-  updateOfflineStatus();
-  setStatus("Nest lokal gespeichert (offline).", "success");
-  showToast("Nest offline gespeichert.");
-  return;
-}
-
-//
-// If online → regular save
-//
-try {
-  await saveNestOnline(payload);
-  setStatus("Nest saved.", "success");
-  showToast("Nest saved.");
-  tryFlushQueue(); // attempt to send queued items too
-} catch (err) {
-  console.error(err);
-  setStatus("Network or server error. Nest stored offline.", "error");
-
-  // fallback: save offline
-  const q = getQueue();
-  q.push(payload);
-  setQueue(q);
-  updateOfflineStatus();
-  showToast("Nest gespeichert (offline).");
-}
-
-  // ---- Nests popup ----
-
-  const nestsModal = document.getElementById("nestsModal");
-  const nestsTableWrap = document.getElementById("nestsTableWrap");
-
-  function openNestsModal(){
-    nestsModal.classList.add("show");
-    nestsModal.setAttribute("aria-hidden","false");
-    loadNestsTable();
-  }
-
-  function closeNestsModal(){
-    nestsModal.classList.remove("show");
-    nestsModal.setAttribute("aria-hidden","true");
-  }
-
-  function actionLabelFromField(field){
-    if(field && typeof field === "object" && field.value){
-      return field.value;
-    }
-    return "";
-  }
-
-  function safeCoord(v){
-    if(v == null || v === "") return "";
-    const n = Number(v);
-    if(Number.isNaN(n)) return "";
-    return n.toFixed(6);
-  }
-
-  async function loadNestsTable(){
-    nestsTableWrap.textContent = "Loading…";
-
-    try{
-      const res = await fetch("/api/nest-list");
-      if(!res.ok){
-        nestsTableWrap.textContent = "Failed to load nests.";
-        return;
-      }
-      const data = await res.json();
-      const rows = data.results || [];
-      if(!rows.length){
-        nestsTableWrap.textContent = "No nests logged yet.";
-        return;
-      }
-
-      const table = document.createElement("table");
-      table.className = "nests-table";
-      table.innerHTML = `
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>River</th>
-            <th>Nest</th>
-            <th>Status</th>
-            <th>Territory</th>
-            <th>Lat</th>
-            <th>Lon</th>
-            <th>Img1</th>
-            <th>Img2</th>
-          </tr>
-        </thead>
+      tr.innerHTML=`
+        <td>${dt}</td>
+        <td>${r.field_6320040||""}</td>
+        <td>${r.field_6319309||""}</td>
+        <td>${r.field_6319311?.value||""}</td>
+        <td>${safeCoord(r.field_6319313)}</td>
+        <td>${safeCoord(r.field_6319314)}</td>
       `;
+      table.appendChild(tr);
+    });
 
-      const tbody = document.createElement("tbody");
+    nestsTableWrap.innerHTML="";
+    nestsTableWrap.appendChild(table);
 
-      rows.forEach(row=>{
-        const tr = document.createElement("tr");
-
-        const dateCell = document.createElement("td");
-        const dt = row.field_6319312
-          ? row.field_6319312.replace("T"," ").slice(0,16)
-          : "";
-        dateCell.textContent = dt;
-        tr.appendChild(dateCell);
-
-                // ---- River field ----
-        const riverCell = document.createElement("td");
-        riverCell.textContent = row.field_6320040 || "";
-        tr.appendChild(riverCell);
-        
-
-        const nestCell = document.createElement("td");
-        const name = row.field_6319309 || "";
-        const id = row.field_6319310 || "";
-        nestCell.innerHTML = `
-          <div>${name}</div>
-          <div class="small-muted">${id ? "(" + id + ")" : ""}</div>
-        `;
-        tr.appendChild(nestCell);
-
-        const actionCell = document.createElement("td");
-        actionCell.textContent = actionLabelFromField(row.field_6319311);
-        tr.appendChild(actionCell);
-
-        const terrCell = document.createElement("td");
-        terrCell.textContent = row.field_6319315 || "";
-        tr.appendChild(terrCell);
-
-        const latCell = document.createElement("td");
-        latCell.textContent = safeCoord(row.field_6319313);
-        tr.appendChild(latCell);
-
-        const lonCell = document.createElement("td");
-        lonCell.textContent = safeCoord(row.field_6319314);
-        tr.appendChild(lonCell);
-
-        const img1Cell = document.createElement("td");
-        img1Cell.className = "thumb-cell";
-        const img1Arr = row.field_6319471 || [];
-        if (Array.isArray(img1Arr) && img1Arr.length > 0 && img1Arr[0].url){
-          const a = document.createElement("a");
-          a.href = img1Arr[0].url;
-          a.target = "_blank";
-          const img = document.createElement("img");
-          img.src = img1Arr[0].url;
-          img.alt = "img1";
-          img.className = "thumb";
-          a.appendChild(img);
-          img1Cell.appendChild(a);
-        } else {
-          img1Cell.textContent = "";
-        }
-        tr.appendChild(img1Cell);
-
-        const img2Cell = document.createElement("td");
-        img2Cell.className = "thumb-cell";
-        const img2Arr = row.field_6319472 || [];
-        if (Array.isArray(img2Arr) && img2Arr.length > 0 && img2Arr[0].url){
-          const a = document.createElement("a");
-          a.href = img2Arr[0].url;
-          a.target = "_blank";
-          const img = document.createElement("img");
-          img.src = img2Arr[0].url;
-          img.alt = "img2";
-          img.className = "thumb";
-          a.appendChild(img);
-          img2Cell.appendChild(a);
-        } else {
-          img2Cell.textContent = "";
-        }
-        tr.appendChild(img2Cell);
-
-        tbody.appendChild(tr);
-      });
-
-      table.appendChild(tbody);
-      nestsTableWrap.innerHTML = "";
-      nestsTableWrap.appendChild(table);
-
-    }catch(err){
-      console.error("Error loading nests:", err);
-      nestsTableWrap.textContent = "Failed to load nests.";
-    }
+  }catch(e){
+    nestsTableWrap.textContent="Failed to load nests.";
   }
+}
 </script>
-<!-- Manual coordinate popup -->
-<div id="coordModal" class="modal-overlay" style="
-  position:fixed; inset:0;
-  background:rgba(0,0,0,0.65);
-  display:none;
-  align-items:center;
-  justify-content:center;
-  z-index:3000;">
-  <div style="
-    background:#fff; padding:16px;
-    border-radius:12px; width:90%; max-width:300px;">
-    
-    <h3 style="margin-top:0;font-size:16px;">Enter coordinates</h3>
-    <div style="font-size:13px;margin-bottom:8px;">
-      Could not retrieve GPS automatically.
-    </div>
-
-    <input id="manualLat" type="number" step="0.000001"
-           placeholder="Latitude"
-           style="width:100%;padding:6px;margin-bottom:8px;border-radius:8px;border:1px solid #ccc;">
-
-    <input id="manualLon" type="number" step="0.000001"
-           placeholder="Longitude"
-           style="width:100%;padding:6px;margin-bottom:12px;border-radius:8px;border:1px solid #ccc;">
-
-    <div style="display:flex;gap:8px;">
-      <button id="coordCancel" class="btn btn-secondary" style="flex:1;">Cancel</button>
-      <button id="coordOk" class="btn btn-primary" style="flex:1;">OK</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>
