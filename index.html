@@ -275,6 +275,9 @@
   </a>
 </header>
 
+  <div id="offlineStatus" class="small-muted" style="display:none; margin-bottom:8px;"></div>
+
+
 <div class="card">
   <div class="field">
   <label for="river">River (optional)</label>
@@ -495,6 +498,78 @@ L.tileLayer(
     return "maintained";
   }
 
+
+  // ------------------------------------------------------------
+// OFFLINE QUEUE (localStorage)
+// ------------------------------------------------------------
+const OFFLINE_KEY = "nestlogger_offline_queue";
+
+function getQueue() {
+  try {
+    return JSON.parse(localStorage.getItem(OFFLINE_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function setQueue(arr) {
+  localStorage.setItem(OFFLINE_KEY, JSON.stringify(arr));
+}
+
+function updateOfflineStatus() {
+  const el = document.getElementById("offlineStatus");
+  const q = getQueue();
+  if (!q.length) {
+    el.style.display = "none";
+    return;
+  }
+  const msg =
+    q.length === 1
+      ? "1 Nest local gespeichert – wird gesendet sobald wieder Internet verfügbar ist."
+      : `${q.length} Nester local gespeichert – werden gesendet sobald wieder Internet verfügbar ist.`;
+  el.textContent = msg;
+  el.style.display = "block";
+}
+
+async function tryFlushQueue() {
+  if (!navigator.onLine) return;
+
+  const q = getQueue();
+  if (!q.length) return;
+
+  let sent = 0;
+  const remaining = [];
+
+  for (const payload of q) {
+    try {
+      await saveNestOnline(payload);
+      sent++;
+    } catch {
+      remaining.push(payload);
+    }
+  }
+
+  setQueue(remaining);
+  updateOfflineStatus();
+
+  if (sent > 0) {
+    showToast(
+      sent === 1
+        ? "1 gespeichertes Nest erfolgreich hochgeladen."
+        : `${sent} gespeicherte Nester erfolgreich hochgeladen.`
+    );
+  }
+}
+
+// Run when app starts
+window.addEventListener("load", () => {
+  updateOfflineStatus();
+  tryFlushQueue();
+});
+
+window.addEventListener("online", tryFlushQueue);
+
+  
   function showToast(msg, ms=2500){
     const t=document.getElementById("toast");
     t.textContent=msg;
