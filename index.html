@@ -593,6 +593,20 @@ window.addEventListener("online", tryFlushQueue);
     });
   }
 
+
+  async function saveNestOnline(payload) {
+  const res = await fetch("/api/nest-submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) {
+    throw new Error("Server error");
+  }
+  return res.json();
+}
+
+  
   async function onSave(){
     setStatus("");
     const river = document.getElementById("river").value.trim();
@@ -673,28 +687,40 @@ const payload = {
 };
 
 
-    setStatus("Saving…");
-    try{
-      const res = await fetch("/api/nest-submit",{
-        method:"POST",
-        headers:{ "Content-Type":"application/json" },
-        body:JSON.stringify(payload)
-      });
-      const data = await res.json().catch(()=> ({}));
-      if(!res.ok){
-        console.error("Server error",res.status,data);
-        setStatus("Failed to save nest.","error");
-        showToast("Failed to save nest.");
-        return;
-      }
-      setStatus("Nest saved.","success");
-      showToast("Nest saved.");
-    }catch(err){
-      console.error(err);
-      setStatus("Network error while saving nest.","error");
-      showToast("Network error.");
-    }
-  }
+   setStatus("Saving…");
+
+//
+// If offline → store in local queue
+//
+if (!navigator.onLine) {
+  const q = getQueue();
+  q.push(payload);
+  setQueue(q);
+  updateOfflineStatus();
+  setStatus("Nest lokal gespeichert (offline).", "success");
+  showToast("Nest offline gespeichert.");
+  return;
+}
+
+//
+// If online → regular save
+//
+try {
+  await saveNestOnline(payload);
+  setStatus("Nest saved.", "success");
+  showToast("Nest saved.");
+  tryFlushQueue(); // attempt to send queued items too
+} catch (err) {
+  console.error(err);
+  setStatus("Network or server error. Nest stored offline.", "error");
+
+  // fallback: save offline
+  const q = getQueue();
+  q.push(payload);
+  setQueue(q);
+  updateOfflineStatus();
+  showToast("Nest gespeichert (offline).");
+}
 
   // ---- Nests popup ----
 
