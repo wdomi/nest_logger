@@ -328,13 +328,13 @@ L.tileLayer(
   }
 ).addTo(map);
 
-  marker = L.marker([46.8, 8.3], { draggable:true }).addTo(map);
+  marker = L.marker([46.629554, 10.194787], { draggable:true }).addTo(map);
   marker.on("moveend", e=>{
     const p = e.target.getLatLng();
     setCoords(p.lat, p.lng);
   });
 
-  setCoords(46.8, 8.3);
+  setCoords(46.629554, 10.194787);
 
   document.getElementById("locBtn").onclick = useMyLocation;
   document.getElementById("saveBtn").onclick = onSave;
