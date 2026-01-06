@@ -299,6 +299,12 @@
 // ------------------------------------------------------------
 // MAP INIT
 // ------------------------------------------------------------
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js")
+    .catch(err => console.error("SW registration failed", err));
+}
+
 let map, marker;
 const latDisplay = document.getElementById("latDisplay");
 const lonDisplay = document.getElementById("lonDisplay");
@@ -378,6 +384,11 @@ function updateOfflineStatus(){
     q.length===1
       ? "1 Nest lokal gespeichert – wird gesendet sobald Internet verfügbar ist."
       : `${q.length} Nester lokal gespeichert – werden gesendet sobald Internet verfügbar ist.`;
+
+  if (!navigator.onLine) {
+  el.textContent += " (offline map limited)";
+}
+
 }
 
 async function saveNestOnline(payload){
