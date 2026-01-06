@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Nest Logger</title>
+
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="apple-touch-icon" href="/favicon.png">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
+  <style>
+    :root{
+      --accent:#2a4d69;
+      --bg:#f8f8f8;
+      --card:#ffffff;
+      --muted:#666;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      padding:12px;
+      font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial;
+      background:var(--bg);
+      color:#222;
+    }
+
+    header {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:8px;
+    }
+    header img{
+      width:45px;
+      height:45px;
+    }
+
+    h1 { font-size:22px; margin:0; }
+    .subtitle { font-size:13px; color:var(--muted); }
+
+    .card{
+      background:var(--card);
+      border-radius:12px;
+      padding:10px;
+      box-shadow:0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom:10px;
+    }
+
+    label{ font-size:14px; font-weight:500; display:block; margin-bottom:4px; }
+
+    input[type="text"], select, textarea{
+      width:100%;
+      padding:7px 9px;
+      border-radius:8px;
+      border:1px solid #ccc;
+      font-size:14px;
+    }
+    textarea{ resize:vertical; min-height:60px; }
+
+    .field{ margin-bottom:8px; }
+
+    .map-wrapper{
+      height:260px;
+      border-radius:10px;
+      overflow:hidden;
+      margin-bottom:6px;
+    }
+    #map{ width:100%; height:100%; }
+
+    .btn{
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid #bbb;
+      background:#eee;
+      cursor:pointer;
+      font-size:14px;
+    }
+    .btn-primary{
+      border-color:var(--accent);
+      background:var(--accent);
+      color:#fff;
+    }
+
+    .status{ font-size:13px; margin-top:4px; }
+    .status.error{ color:#c22; }
+    .status.success{ color:#2a7b3f; }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:16px;
+      transform:translateX(-50%);
+      background:rgba(0,0,0,0.85);
+      color:#fff;
+      padding:8px 12px;
+      border-radius:999px;
+      font-size:13px;
+      display:none;
+      z-index:9999;
+    }
+    .toast.show{ display:block; }
+
+    /* Modal */
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.65);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:2000;
+    }
+    .modal-overlay.show{ display:flex; }
+
+    .modal{
+      background:#fff;
+      color:#222;
+      border-radius:12px;
+      width:100%;
+      max-width:95%;
+      max-height:85vh;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      box-shadow:0 4px 14px rgba(0,0,0,0.3);
+    }
+
+    .modal-header{
+      padding:10px 12px;
+      display:flex;
+      justify-content:space-between;
+      border-bottom:1px solid #ddd;
+      align-items:center;
+    }
+
+    .modal-body{
+      padding:8px;
+      overflow:auto;
+      background:#fafafa;
+    }
+
+    .modal-close-btn{
+      background:#eee;
+      border:none;
+      border-radius:999px;
+      padding:4px 10px;
+      cursor:pointer;
+      font-size:13px;
+    }
+
+    @media (min-width:700px){
+      body{ max-width:480px; margin:0 auto; }
+    }
+  </style>
+</head>
+
+<body>
+<header>
+  <img src="/favicon.png" alt="">
+  <div style="flex:1">
+    <h1>Nest Logger</h1>
+    <div class="subtitle">Log dipper nests with GPS, status and photos.</div>
+  </div>
+
+  <a href="https://dipper-finder.vercel.app"
+     style="padding:6px 12px;border-radius:999px;background:#2a4d69;color:#fff;text-decoration:none;font-size:13px;white-space:nowrap;">
+     Dipper-Finder
+  </a>
+</header>
+
+<div id="offlineStatus" class="small-muted" style="display:none;margin-bottom:8px;"></div>
+
+<!-- FORM -->
+<div class="card">
+  <div class="field">
+    <label for="river">River (optional)</label>
+    <input id="river" type="text">
+  </div>
+  <div class="field">
+    <label for="nestName">Nest name *</label>
+    <input id="nestName" type="text" required>
+  </div>
+  <div class="field">
+    <label for="nestId">Nest ID (optional)</label>
+    <input id="nestId" type="text">
+  </div>
+  <div class="field">
+    <label>Status *</label>
+    <label><input type="radio" name="status" value="maintained" checked> Maintained</label>
+    <label><input type="radio" name="status" value="old"> Old</label>
+    <label><input type="radio" name="status" value="broken"> Broken</label>
+  </div>
+  <div class="field">
+    <label for="territory">Territory</label>
+    <input id="territory" type="text">
+  </div>
+</div>
+
+<!-- MAP -->
+<div class="card">
+  <button id="locBtn" class="btn">Use my location</button>
+
+  <div class="map-wrapper">
+    <div id="map"></div>
+  </div>
+
+  <div class="coords">
+    Lat: <span id="latDisplay">–</span>,
+    Lon: <span id="lonDisplay">–</span>
+  </div>
+</div>
+
+<!-- IMAGES -->
+<div class="card">
+  <label>Photos (optional)</label>
+  <input id="img1" type="file" accept="image/*"><br>
+  <input id="img2" type="file" accept="image/*">
+</div>
+
+<!-- EXTRA FIELDS -->
+<div class="card">
+  <div class="field">
+    <label for="remark">Remark</label>
+    <textarea id="remark"></textarea>
+  </div>
+
+  <div class="field">
+    <label>Ladder</label>
+    <label><input type="radio" name="ladder" value="y"> Yes</label>
+    <label><input type="radio" name="ladder" value="n"> No</label>
+    <label><input type="radio" name="ladder" value="maybe" checked> Maybe</label>
+  </div>
+
+  <div class="field">
+    <label for="height_m">Height (m)</label>
+    <input id="height_m" type="number" step="0.1" min="0">
+  </div>
+
+  <div class="field">
+    <label>Side going downriver</label>
+    <select id="side">
+      <option value="">–</option>
+      <option value="right">Right</option>
+      <option value="left">Left</option>
+      <option value="middle">Middle</option>
+      <option value="roof">Roof</option>
+    </select>
+  </div>
+
+  <div class="field">
+    <label>Aspect</label>
+    <select id="aspect">
+      <option value="">–</option>
+      <option value="N">N</option>
+      <option value="NE">NE</option>
+      <option value="E">E</option>
+      <option value="SE">SE</option>
+      <option value="S">S</option>
+      <option value="SW">SW</option>
+      <option value="W">W</option>
+      <option value="NW">NW</option>
+    </select>
+  </div>
+</div>
+
+<!-- SAVE -->
+<div class="card">
+  <button id="saveBtn" class="btn btn-primary" style="width:100%">Save nest</button>
+  <div id="status" class="status"></div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<!-- NEST LIST MODAL -->
+<div id="nestsModal" class="modal-overlay" aria-hidden="true">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Last 100 nests</h2>
+      <button id="nestsCloseBtn" class="modal-close-btn">Close</button>
+    </div>
+    <div class="modal-body">
+      <div id="nestsTableWrap">Loading…</div>
+    </div>
+  </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// ------------------------------------------------------------
+// MAP INIT
+// ------------------------------------------------------------
+let map, marker;
+const latDisplay = document.getElementById("latDisplay");
+const lonDisplay = document.getElementById("lonDisplay");
+
+function setCoords(lat, lon){
+  latDisplay.textContent = lat.toFixed(6);
+  lonDisplay.textContent = lon.toFixed(6);
+  marker.setLatLng([lat, lon]);
+  map.setView([lat, lon], 15);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  map = L.map("map").setView([46.8, 8.3], 8);
+
+  L.tileLayer(
+    "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg",
+    { maxZoom: 19, minZoom: 5 }
+  ).addTo(map);
+
+  marker = L.marker([46.8, 8.3], { draggable:true }).addTo(map);
+  marker.on("moveend", e=>{
+    const p = e.target.getLatLng();
+    setCoords(p.lat, p.lng);
+  });
+
+  setCoords(46.8, 8.3);
+
+  document.getElementById("locBtn").onclick = useMyLocation;
+  document.getElementById("saveBtn").onclick = onSave;
+  document.getElementById("viewNestsBtn")?.addEventListener("click", openNestsModal);
+  document.getElementById("nestsCloseBtn").onclick = closeNestsModal;
+
+  updateOfflineStatus();
+  tryFlushQueue();
+});
+
+function useMyLocation(){
+  if(!navigator.geolocation){
+    showToast("Geolocation not supported.");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(
+    pos => setCoords(pos.coords.latitude, pos.coords.longitude),
+    () => showToast("Could not get location."),
+    { enableHighAccuracy:true }
+  );
+}
+
+// ------------------------------------------------------------
+// OFFLINE QUEUE
+// ------------------------------------------------------------
+const OFFLINE_KEY = "nestlogger_queue";
+
+function getQueue(){
+  try{ return JSON.parse(localStorage.getItem(OFFLINE_KEY)||"[]"); }
+  catch{ return []; }
+}
+
+function setQueue(arr){
+  localStorage.setItem(OFFLINE_KEY, JSON.stringify(arr));
+}
+
+function updateOfflineStatus(){
+  const q = getQueue();
+  const el = document.getElementById("offlineStatus");
+
+  if(!q.length){
+    el.style.display="none";
+    return;
+  }
+  el.style.display="block";
+  el.textContent =
+    q.length===1
+      ? "1 Nest lokal gespeichert – wird gesendet sobald Internet verfügbar ist."
+      : `${q.length} Nester lokal gespeichert – werden gesendet sobald Internet verfügbar ist.`;
+}
+
+async function saveNestOnline(payload){
+  const r = await fetch("/api/nest-submit",{
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify(payload)
+  });
+  if(!r.ok) throw new Error("Server error");
+  return r.json();
+}
+
+async function tryFlushQueue(){
+  if(!navigator.onLine) return;
+
+  const q = getQueue();
+  if(!q.length) return;
+
+  const remaining=[];
+  let sent=0;
+
+  for(const entry of q){
+    try{
+      await saveNestOnline(entry);
+      sent++;
+    }catch{
+      remaining.push(entry);
+    }
+  }
+
+  setQueue(remaining);
+  updateOfflineStatus();
+
+  if(sent>0){
+    showToast(`${sent} gespeicherte Nester hochgeladen.`);
+  }
+}
+
+// ------------------------------------------------------------
+// UI HELPERS
+// ------------------------------------------------------------
+function showToast(msg, ms=2500){
+  const t=document.getElementById("toast");
+  t.textContent=msg;
+  t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"), ms);
+}
+
+function setStatus(msg, type=""){
+  const el=document.getElementById("status");
+  el.textContent=msg;
+  el.className="status " + type;
+}
+
+function readFileAsBase64(file){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();
+    r.onload=()=>resolve(r.result);
+    r.onerror=reject;
+    r.readAsDataURL(file);
+  });
+}
+
+// ------------------------------------------------------------
+// SAVE LOGIC
+// ------------------------------------------------------------
+function getSelectedStatus(){
+  return document.querySelector('input[name="status"]:checked').value;
+}
+
+async function onSave(){
+  setStatus("");
+
+  const river = document.getElementById("river").value.trim();
+  const nest_name = document.getElementById("nestName").value.trim();
+  const nest_id = document.getElementById("nestId").value.trim();
+  const territory = document.getElementById("territory").value.trim();
+
+  if(!nest_name){
+    setStatus("Nest name is required","error");
+    showToast("Nest name required");
+    return;
+  }
+
+  const lat = Number(latDisplay.textContent);
+  const lon = Number(lonDisplay.textContent);
+
+  const images=[];
+
+  try{
+    const img1=document.getElementById("img1").files[0];
+    const img2=document.getElementById("img2").files[0];
+
+    if(img1){
+      const data=await readFileAsBase64(img1);
+      images.push({ filename:img1.name, mimeType:img1.type, dataBase64:data.split(",")[1] });
+    }
+
+    if(img2){
+      const data=await readFileAsBase64(img2);
+      images.push({ filename:img2.name, mimeType:img2.type, dataBase64:data.split(",")[1] });
+    }
+  }catch(e){
+    setStatus("Error reading images","error");
+    return;
+  }
+
+  const payload = {
+    river: river || null,
+    nest_name,
+    nest_id: nest_id || null,
+    status: getSelectedStatus(),
+    latitude: lat,
+    longitude: lon,
+    territory: territory || null,
+    remark: document.getElementById("remark").value.trim() || null,
+    ladder: document.querySelector('input[name="ladder"]:checked')?.value || null,
+    height_m: Number(document.getElementById("height_m").value) || null,
+    side_going_downriver: document.getElementById("side").value || null,
+    aspect: document.getElementById("aspect").value || null,
+    images
+  };
+
+  setStatus("Saving...");
+
+  // offline
+  if(!navigator.onLine){
+    const q=getQueue();
+    q.push(payload);
+    setQueue(q);
+    updateOfflineStatus();
+    setStatus("Nest offline gespeichert","success");
+    showToast("Nest offline gespeichert");
+    return;
+  }
+
+  // online
+  try{
+    await saveNestOnline(payload);
+    setStatus("Nest saved","success");
+    showToast("Nest saved");
+    tryFlushQueue();
+  }catch(err){
+    // fallback to offline
+    const q=getQueue();
+    q.push(payload);
+    setQueue(q);
+    updateOfflineStatus();
+    setStatus("Offline gespeichert","success");
+    showToast("Offline gespeichert");
+  }
+}
+
+// ------------------------------------------------------------
+// NEST LIST MODAL
+// ------------------------------------------------------------
+const nestsModal=document.getElementById("nestsModal");
+const nestsTableWrap=document.getElementById("nestsTableWrap");
+
+function openNestsModal(){
+  nestsModal.classList.add("show");
+  nestsModal.setAttribute("aria-hidden","false");
+  loadNestsTable();
+}
+
+function closeNestsModal(){
+  nestsModal.classList.remove("show");
+  nestsModal.setAttribute("aria-hidden","true");
+}
+
+function safeCoord(v){
+  if(!v) return "";
+  const n=Number(v);
+  return isNaN(n)?"":n.toFixed(6);
+}
+
+async function loadNestsTable(){
+  nestsTableWrap.textContent="Loading…";
+
+  try{
+    const res=await fetch("/api/nest-list");
+    if(!res.ok){
+      nestsTableWrap.textContent="Failed to load nests.";
+      return;
+    }
+
+    const data=await res.json();
+    const rows=data.results || [];
+
+    if(!rows.length){
+      nestsTableWrap.textContent="No nests logged yet.";
+      return;
+    }
+
+    const table=document.createElement("table");
+    table.style.width="100%";
+
+    const header=document.createElement("tr");
+    header.innerHTML="<th>Date</th><th>River</th><th>Name</th><th>Status</th><th>Lat</th><th>Lon</th>";
+    table.appendChild(header);
+
+    rows.forEach(r=>{
+      const tr=document.createElement("tr");
+
+      const dt = r.field_6319312?.replace("T"," ").slice(0,16) || "";
+
+      tr.innerHTML=`
+        <td>${dt}</td>
+        <td>${r.field_6320040||""}</td>
+        <td>${r.field_6319309||""}</td>
+        <td>${r.field_6319311?.value||""}</td>
+        <td>${safeCoord(r.field_6319313)}</td>
+        <td>${safeCoord(r.field_6319314)}</td>
+      `;
+      table.appendChild(tr);
+    });
+
+    nestsTableWrap.innerHTML="";
+    nestsTableWrap.appendChild(table);
+
+  }catch(e){
+    nestsTableWrap.textContent="Failed to load nests.";
+  }
+}
+</script>
+
+</body>
+</html>
