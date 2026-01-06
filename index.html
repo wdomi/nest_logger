@@ -299,15 +299,29 @@ function setStatus(msg,type=""){
 
 // ⭐ RESET FORM
 function resetFormForNextObservation(){
-  document.querySelectorAll("input[type=text],input[type=number],textarea")
-    .forEach(el=>el.value="");
-  document.querySelectorAll("select").forEach(el=>el.value="");
-  document.querySelector('input[name="status"][value="maintained"]').checked=true;
-  document.querySelector('input[name="ladder"][value="maybe"]').checked=true;
-  document.getElementById("img1").value="";
-  document.getElementById("img2").value="";
+  // text + number fields EXCEPT river
+  document.querySelectorAll("input[type=text], input[type=number], textarea")
+    .forEach(el => {
+      if (el.id !== "river") {
+        el.value = "";
+      }
+    });
+
+  // selects
+  document.querySelectorAll("select").forEach(el => el.value = "");
+
+  // radios → restore defaults
+  document.querySelector('input[name="status"][value="maintained"]').checked = true;
+  document.querySelector('input[name="ladder"][value="maybe"]').checked = true;
+
+  // file inputs
+  document.getElementById("img1").value = "";
+  document.getElementById("img2").value = "";
+
+  // clear save status text
   setStatus("");
 }
+
 
 // ---------------- SAVE ----------------
 function getSelectedStatus(){
